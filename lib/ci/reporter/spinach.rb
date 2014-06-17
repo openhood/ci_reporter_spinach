@@ -46,6 +46,16 @@ module CI
         @test_case.failures << SpinachFailure.new(:error, step, failure, step_location)
       end
 
+      def on_pending_step(step, step_location)
+        @test_case.name = "#{@test_case.name} (PENDING)" unless @test_case.name.include?('PENDING')
+        @test_case.skipped = true
+      end
+
+      def on_skipped_step(step, step_location)
+        @test_case.name = "#{@test_case.name} (SKIPPED)" unless @test_case.name.include?('SKIPPED')
+        @test_case.skipped = true
+      end
+
       def after_scenario_run(scenario, step_definitions = nil)
         @test_case.finish
         @test_suite.testcases << @test_case
