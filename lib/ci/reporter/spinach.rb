@@ -22,6 +22,18 @@ module CI
         @test_case.start
       end
 
+      def on_feature_not_found(feature)
+        feature.scenarios.map do |scenario|
+          test_case = TestCase.new(scenario.name)
+          test_case.start
+          error = StandardError.new('Undefined feature')
+          error.set_backtrace([])
+          test_case.failures << SpinachFailure.new(:error, feature, error, nil)
+          test_case.finish
+          @test_suite.testcases << test_case
+        end
+      end
+
       def on_undefined_step(step, failure, step_definitions = nil)
         @test_case.failures << SpinachFailure.new(:error, step, failure, nil)
       end

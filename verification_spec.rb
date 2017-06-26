@@ -9,8 +9,9 @@ describe "Spinach acceptance" do
   include CI::Reporter::TestUtils::SharedExamples
   Accessor = CI::Reporter::TestUtils::Accessor
 
-  context "the feature" do
+  context "scenario level failures" do
     let(:report_path) { File.join(REPORTS_DIR, 'FEATURES-Example-Spinach-feature.xml') }
+
     subject(:result) { Accessor.new(load_xml_result(report_path)) }
 
     it { is_expected.to have(2).errors }
@@ -64,39 +65,19 @@ describe "Spinach acceptance" do
     end
   end
 
-  context "no feature definition found" do
+  context "feature level failures" do
     let(:report_path) { File.join(REPORTS_DIR, 'FEATURES-Example-Spinach-no-feature.xml') }
     subject(:result) { Accessor.new(load_xml_result(report_path)) }
 
-    describe "scenario 1" do
-      subject(:testcase) { result.testcase('Scenario 1') }
+    describe "the failure" do
+      let(:testcase) { result.testcase('Conscientious developer') }
+      let(:failure) { testcase.errors.first }
 
-      it { is_expected.to have(1).errors }
-
-      describe "the failure" do
-        subject(:failure) { testcase.errors.first }
-
-        it "has a type" do
-          expect(failure.type).to match /StandardError/
-        end
-      end
-    end
-
-    describe "Another scenario" do
-      subject(:testcase) { result.testcase('Another scenario') }
-
-      it { is_expected.to have(1).errors }
-
-      describe "the failure" do
-        subject(:failure) { testcase.errors.first }
-
-        it "has a type" do
-          expect(failure.type).to match /StandardError/
-        end
+      it "has a type" do
+        expect(failure.type).to match /StepNotDefinedException/
       end
     end
   end
-
 
   def load_xml_result(path)
     File.open(path) do |f|
