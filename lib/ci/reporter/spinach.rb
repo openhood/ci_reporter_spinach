@@ -4,6 +4,17 @@ require 'spinach'
 
 module CI
   module Reporter
+    class TestCaseSpinach < TestCase
+      attr_accessor :classname
+
+      def members
+        super + [:classname]
+      end
+      def values
+        super + [classname]
+      end
+    end
+
     class Spinach < ::Spinach::Reporter
       include SpinachVersion
 
@@ -18,13 +29,15 @@ module CI
       end
 
       def before_scenario_run(scenario, step_definitions = nil)
-        @test_case = TestCase.new(scenario.is_a?(Hash) ? scenario['name'] : scenario.name)
+        @test_case = TestCaseSpinach.new(scenario.is_a?(Hash) ? scenario['name'] : scenario.name)
+        @test_case.classname = scenario.feature.name if scenario.respond_to?(:feature)
         @test_case.start
       end
 
       def on_feature_not_found(feature)
         feature.scenarios.map do |scenario|
-          test_case = TestCase.new(scenario.name)
+          test_case = TestCaseSpinach.new(scenario.name)
+          test_case.classname = scenario.feature.name if scenario.respond_to?(:feature)
           test_case.start
           error = StandardError.new('Undefined feature')
           error.set_backtrace([])
